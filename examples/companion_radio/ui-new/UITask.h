@@ -22,6 +22,24 @@
 #include "../AbstractUITask.h"
 #include "../NodePrefs.h"
 
+#ifdef NEONPOCKET_UI
+  static constexpr ColorVal NEON_DARK = 0x0000;
+  static constexpr ColorVal NEON_LIGHT = 0xFFFF;
+  static constexpr ColorVal NEON_RED = 0xF800;
+  static constexpr ColorVal NEON_GREEN = 0x07E0;
+  static constexpr ColorVal NEON_BLUE = 0x001F;
+  static constexpr ColorVal NEON_YELLOW = 0xFFE0;
+  static constexpr ColorVal NEON_ORANGE = 0xFD20;
+#else
+  #define NEON_DARK UIColor::window_bkg
+  #define NEON_LIGHT UIColor::primary_txt
+  #define NEON_RED UIColor::warning_txt
+  #define NEON_GREEN UIColor::primary_txt
+  #define NEON_BLUE UIColor::corp_blue
+  #define NEON_YELLOW UIColor::secondary_txt
+  #define NEON_ORANGE UIColor::warning_txt
+#endif
+
 class UITask : public AbstractUITask {
   DisplayDriver* _display;
   SensorManager* _sensors;
@@ -36,10 +54,10 @@ class UITask : public AbstractUITask {
   char _alert[80];
   unsigned long _alert_expiry;
   int _msgcount = 0;
-#ifdef HELTEC_RCC6_NEON_UI
-  DisplayDriver::Color _alert_color = DisplayDriver::LIGHT;
+#ifdef NEONPOCKET_UI
+  ColorVal _alert_color = NEON_LIGHT;
   unsigned long _alert_started = 0;
-  DisplayDriver::Color _pulse_color = DisplayDriver::YELLOW;
+  ColorVal _pulse_color = NEON_YELLOW;
   unsigned long _pulse_started = 0;
   unsigned long _pulse_until = 0;
   unsigned long _pending_pulse_duration = 0;
@@ -62,10 +80,10 @@ class UITask : public AbstractUITask {
   unsigned long _next_batt_sample = 0;
   bool _battery_low_warning = false;
   unsigned long _manual_advert_until = 0;
-  DisplayDriver::Color _next_message_color = DisplayDriver::YELLOW;
+  ColorVal _next_message_color = NEON_YELLOW;
   bool _unread_overflow = false;
 
-  void startNeonPulse(DisplayDriver::Color color, unsigned long duration_millis = 300);
+  void startNeonPulse(ColorVal color, unsigned long duration_millis = 300);
   bool handleNeonInput(char c);
 #endif
   unsigned long ui_started_at, next_batt_chck;
@@ -105,13 +123,13 @@ public:
   void begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* node_prefs);
 
   void gotoHomeScreen() { setCurrScreen(home); }
-#ifdef HELTEC_RCC6_NEON_UI
+#ifdef NEONPOCKET_UI
   void gotoMsgPreviewScreen() { setCurrScreen(msg_preview); }
 #endif
   void showAlert(const char* text, int duration_millis,
-      DisplayDriver::Color color = DisplayDriver::LIGHT);
+      ColorVal color = NEON_LIGHT);
   int  getMsgCount() const { return _msgcount; }
-#ifdef HELTEC_RCC6_NEON_UI
+#ifdef NEONPOCKET_UI
   const char* getLatestSender() const { return _latest_sender; }
   const char* getLatestPreview() const { return _latest_preview; }
   bool hasLatestPreview() const { return _latest_preview[0] != 0; }
@@ -144,12 +162,12 @@ public:
   // from AbstractUITask
   void msgRead(int msgcount) override;
   void newMsg(uint8_t path_len, const char* from_name, const char* text, int msgcount) override;
-#ifdef HELTEC_RCC6_NEON_UI
+#ifdef NEONPOCKET_UI
   void newMsgWithEvent(uint8_t path_len, const char* from_name, const char* text,
       int msgcount, UIEventType type) override;
 #endif
   void notify(UIEventType t = UIEventType::none) override;
-#ifdef HELTEC_RCC6_NEON_UI
+#ifdef NEONPOCKET_UI
   void onNewContactVisual() override;
   void onRadioEvent(UIRadioEvent event, uint8_t payload_type,
       int16_t rssi_dbm = 0, int16_t snr_quarter_db = 0) override;

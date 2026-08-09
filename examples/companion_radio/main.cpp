@@ -1,4 +1,5 @@
 #include <Arduino.h>   // needed for PlatformIO
+#include <stdlib.h>
 #include <Mesh.h>
 #include "MyMesh.h"
 
@@ -109,6 +110,34 @@ void halt() {
   }
 }
 
+#ifdef DISPLAY_CLASS
+static void showFatal(DisplayDriver* display_driver, const char* line1, const char* line2) {
+  if (display_driver == NULL) return;
+  if (!display_driver->isOn()) display_driver->turnOn();
+  if (!display_driver->isOn()) return;
+  display_driver->startFrame();
+  display_driver->setTextSize(1);
+  display_driver->setColor(UIColor::warning_txt);
+  display_driver->drawTextCentered(display_driver->width() / 2,
+      display_driver->height() / 2 - 10, line1);
+  display_driver->setColor(UIColor::primary_txt);
+  display_driver->drawTextCentered(display_driver->width() / 2,
+      display_driver->height() / 2 + 8, line2);
+  display_driver->endFrame();
+}
+#endif
+
+#ifdef NEONPOCKET_MEMORY_GATE_BYTES
+static unsigned long next_neon_memory_probe = 0;
+
+static bool probeNeonMemory() {
+  void* probe = malloc(NEONPOCKET_MEMORY_GATE_BYTES);
+  if (probe == NULL) return false;
+  free(probe);
+  return true;
+}
+#endif
+
 /* WIFI RECONNECT TRACKERS */
 #if defined(ESP32) && defined(WIFI_SSID)
   bool wifi_needs_reconnect = false;
@@ -133,6 +162,11 @@ void setup() {
   #endif
     disp->drawTextCentered(disp->width() / 2, 28, "Loading...");
     disp->endFrame();
+  } else {
+    Serial.println("ERROR: required display initialization failed");
+  #ifdef DISPLAY_REQUIRED
+    halt();
+  #endif
   }
 #endif
 
@@ -155,7 +189,16 @@ void setup() {
   fast_rng.begin(radio_driver.getRngSeed());
 
 #if defined(NRF52_PLATFORM) || defined(STM32_PLATFORM)
-  InternalFS.begin();
+  const bool internal_fs_ready = InternalFS.begin();
+#ifdef NEONPOCKET_UI
+  if (!internal_fs_ready) {
+    Serial.println("ERROR: internal filesystem mount failed; refusing to format");
+  #ifdef DISPLAY_CLASS
+    showFatal(disp, "STORAGE FAILED", "Identity preserved");
+  #endif
+    halt();
+  }
+#endif
   #if defined(QSPIFLASH)
     if (!QSPIFlash.begin()) {
       // debug output might not be available at this point, might be too early. maybe should fall back to InternalFS here?
@@ -257,6 +300,18 @@ void setup() {
   ui_task.begin(disp, &sensors, the_mesh.getNodePrefs());  // still want to pass this in as dependency, as prefs might be moved
 #endif
 
+#ifdef NEONPOCKET_MEMORY_GATE_BYTES
+  if (!probeNeonMemory()) {
+    Serial.println("ERROR: NeonPocket 16 KB memory gate failed");
+  #ifdef DISPLAY_CLASS
+    showFatal(disp, "MEMORY GATE FAILED", "Reset device");
+  #endif
+    halt();
+  }
+  Serial.println("NeonPocket: 16 KB memory gate passed");
+  next_neon_memory_probe = millis() + 60000;
+#endif
+
   board.onBootComplete();
 }
 
@@ -270,6 +325,20 @@ void loop() {
   rtc_clock.tick();
 #ifdef HAS_EXTERNAL_WATCHDOG
   external_watchdog.loop();
+#endif
+
+#ifdef NEONPOCKET_MEMORY_GATE_BYTES
+  const unsigned long memory_now = millis();
+  if ((long)(memory_now - next_neon_memory_probe) >= 0) {
+    next_neon_memory_probe = memory_now + 60000;
+    if (!probeNeonMemory()) {
+      Serial.println("ERROR: NeonPocket runtime memory gate failed");
+  #ifdef DISPLAY_CLASS
+      showFatal(&display, "MEMORY GATE FAILED", "Activity halted");
+  #endif
+      halt();
+    }
+  }
 #endif
 
   if (!the_mesh.hasPendingWork()) {
