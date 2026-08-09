@@ -14,6 +14,14 @@ Experimental MeshCore 1.17 BLE companion firmware for the Heltec RadioCore RC52-
 
 <p align="center"><em>NeonPocketMC Home dashboard on the RC52 qualification unit.</em></p>
 
+## Demo-scene startup
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/n30nex/NeonPocketMC/main/docs/images/demoscene/neonpocket-splash.gif" alt="NeonPocketMC animated demo-scene boot sequence" width="660">
+</p>
+
+The RC52 renders this 3.2-second sequence natively before the companion dashboard. The GIF is a direct, checksum-verified capture of the shared 220×128 renderer; capture provenance is maintained in the [unified gallery](https://github.com/n30nex/NeonPocketMC/tree/main/docs/images/demoscene).
+
 ## Release status
 
 The current experimental release is [`v1.1.0-rc.1`](https://github.com/n30nex/NeonPocketMC-RC52/releases/tag/v1.1.0-rc.1). Use only the files attached to that GitHub Release; short-lived Actions artifacts are development builds.
