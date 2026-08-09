@@ -1,128 +1,81 @@
-## About MeshCore
+# NeonPocketMC-RC52
 
-MeshCore is a lightweight, portable C++ library that enables multi-hop packet routing for embedded projects using LoRa and other packet radios. It is designed for developers who want to create resilient, decentralized communication networks that work without the internet.
+Experimental MeshCore 1.17 BLE companion firmware for the Heltec RadioCore RC52-L62 with its vendor 220 x 128 NV3001B TFT.
 
-## 🔍 What is MeshCore?
+> **RC52 only—do not flash RCC6, RC32, or RC52 variants with different display/radio hardware.**
 
-MeshCore now supports a range of LoRa devices, allowing for easy flashing without the need to compile firmware manually. Users can flash a pre-built binary using tools like Adafruit ESPTool and interact with the network through a serial console.
-MeshCore provides the ability to create wireless mesh networks, similar to Meshtastic and Reticulum but with a focus on lightweight multi-hop packet routing for embedded projects. Unlike Meshtastic, which is tailored for casual LoRa communication, or Reticulum, which offers advanced networking, MeshCore balances simplicity with scalability, making it ideal for custom embedded solutions, where devices (nodes) can communicate over long distances by relaying messages through intermediate nodes. This is especially useful in off-grid, emergency, or tactical situations where traditional communication infrastructure is unavailable.
+## Experimental status
 
-## ⚡ Key Features
+This repository is public for development and hardware qualification. There is **no endorsed binary release yet**. Do not distribute an Actions artifact as a release build. The first release candidate will be published only after the exact artifact passes the hardware checklist below.
 
-* Multi-Hop Packet Routing
-  * Devices can forward messages across multiple nodes, extending range beyond a single radio's reach.
-  * Supports up to a configurable number of hops to balance network efficiency and prevent excessive traffic.
-  * Nodes use fixed roles where "Companion" nodes are not repeating messages at all to prevent adverse routing paths from being used.
-* Supports LoRa Radios – Works with Heltec, RAK Wireless, and other LoRa-based hardware.
-* Decentralized & Resilient – No central server or internet required; the network is self-healing.
-* Low Power Consumption – Ideal for battery-powered or solar-powered devices.
-* Simple to Deploy – Pre-built example applications make it easy to get started.
+The port is pinned to MeshCore 1.17.0 at upstream commit [`727fc0512ce08bfd7b499e46daa7fca6eeec730d`](https://github.com/meshcore-dev/MeshCore/commit/727fc0512ce08bfd7b499e46daa7fca6eeec730d). The RCC6 project supplied the visual reference only; its ESP32 hardware, Web/AP transport, and release history are not included.
 
-## 🎯 What Can You Use MeshCore For?
+## What is included
 
-* Off-Grid Communication: Stay connected even in remote areas.
-* Emergency Response & Disaster Recovery: Set up instant networks where infrastructure is down.
-* Outdoor Activities: Hiking, camping, and adventure racing communication.
-* Tactical & Security Applications: Military, law enforcement, and private security use cases.
-* IoT & Sensor Networks: Collect data from remote sensors and relay it back to a central location.
+- One target: `heltec_rc52_companion_radio_ble`
+- BLE companion transport only
+- Native 220 x 128 RGB565 NeonPocket dashboard and inbox
+- One hardware-SPI framebuffer with 8-row delta flushing
+- Home, Inbox, Nearby, Radio, Bluetooth, Advert, and Power pages
+- Local direct and `#channel` unread tracking with a bounded `32+` cache
+- 60-second TFT timeout while BLE and LoRa continue running
+- Warning below 3.45 V, cleared above 3.60 V; no automatic low-voltage shutdown
+- Fail-closed display, memory, radio, and filesystem startup checks
 
-## 🚀 How to Get Started
+Web/AP, USB companion, headless, and alternate RC52 hardware variants are deliberately out of scope.
 
-- Watch the [MeshCore QuickStart Playlist](https://www.youtube.com/watch?v=iaFltojJrAc&list=PLshzThxhw4O4WU_iZo3NmNZOv6KMrUuF9) by The Comms Channel
-- Watch the [MeshCore Technical Presentation](https://www.youtube.com/watch?v=OwmkVkZQTf4) by Liam Cottle.
-- Read through our [Frequently Asked Questions](./docs/faq.md) and [Documentation](https://docs.meshcore.io).
-- Flash the MeshCore firmware on a supported device.
-- Connect with a supported client.
+## Hardware contract
 
-For developers:
+| Function | Pins / behavior |
+| --- | --- |
+| TFT SPI1 | SCK 30, MOSI 35, CS 37, DC 28, reset 10 |
+| TFT power | enable 45 active-low, backlight 9 active-high |
+| SX1262 SPI | SCK 25, MISO 14, MOSI 22, CS 13 |
+| SX1262 control | DIO1 11, BUSY 24, reset 32, RXEN 39 |
+| Radio power | FEM 26, VFEM 16 |
+| User button | 42, active-low |
+| Battery ADC | control 4, ADC 31, provisional multiplier 4.9 |
 
-- Install [PlatformIO](https://docs.platformio.org) in [Visual Studio Code](https://code.visualstudio.com).
-- Clone and open the MeshCore repository in Visual Studio Code.
-- See the example applications you can modify and run:
-  - [Companion Radio](./examples/companion_radio) - For use with an external chat app, over BLE, USB or Wi-Fi.
-  - [KISS Modem](./examples/kiss_modem) - Serial KISS protocol bridge for host applications. ([protocol docs](./docs/kiss_modem_protocol.md))
-  - [Simple Repeater](./examples/simple_repeater) - Extends network coverage by relaying messages.
-  - [Simple Room Server](./examples/simple_room_server) - A simple BBS server for shared Posts.
-  - [Simple Secure Chat](./examples/simple_secure_chat) - Secure terminal based text communication between devices.
-  - [Simple Sensor](./examples/simple_sensor) - Remote sensor node with telemetry and alerting.
+The radio uses DIO2 RF switching, DIO3 at 1.8 V for the TCXO, DC-DC mode, and the RC52 radio-power startup sequence.
 
-The Simple Secure Chat example can be interacted with through the Serial Monitor in Visual Studio Code, or with a Serial USB Terminal on Android.
+## Button behavior
 
-## ⚡️ MeshCore Flasher
+- Screen off: the first gesture wakes the TFT and is consumed.
+- Single press: next tab, inbox item, or message page.
+- Double press: the current page action, including opening Inbox, toggling BLE, or sending a flood-scoped Advert.
+- Long hold: show Power confirmation.
+- Second long hold within eight seconds while confirmation is visible: enter nRF52 system-off after button release.
 
-We have prebuilt firmware ready to flash on supported devices.
+## Build
 
-- Launch https://meshcore.io/flasher
-- Select a supported device
-- Flash one of the firmware types:
-  - Companion, Repeater or Room Server
-- Once flashing is complete, you can connect with one of the MeshCore clients below.
+GitHub Actions is the supported build path. The `RC52 Build` workflow:
 
-## 📱 MeshCore Clients
+1. checks out the exact branch commit rather than a synthetic pull-request merge;
+2. runs the upstream native unit tests;
+3. builds `heltec_rc52_companion_radio_ble`;
+4. verifies the UF2 family and application start address;
+5. regression-builds `Heltec_t114_companion_radio_ble`; and
+6. publishes short-lived `.uf2`, `.hex`, checksum, and UF2-info artifacts.
 
-**Companion Firmware**
+The artifact is application-only. It must be copied through the RC52 UF2 bootloader. **Never erase or replace the bootloader or SoftDevice.** See [docs/FLASHING.md](docs/FLASHING.md).
 
-The companion firmware can be connected to via BLE, USB or Wi-Fi depending on the firmware type you flashed.
+## Release gate
 
-- Web: https://app.meshcore.nz
-- Android: https://play.google.com/store/apps/details?id=com.liamcottle.meshcore.android
-- iOS: https://apps.apple.com/us/app/meshcore/id6742354151?platform=iphone
-- NodeJS: https://github.com/liamcottle/meshcore.js
-- Python: https://github.com/fdlamotte/meshcore-cli
+Before `v1.0.0-rc.1`, the exact Actions artifact must pass:
 
-**Repeater and Room Server Firmware**
+- three clean resets with stable USB and an upright, uncropped TFT;
+- framebuffer allocation plus a recurring 16 KB diagnostic allocation;
+- 30 minutes of BLE-authenticated sync and LoRa activity without reset or display corruption;
+- all single/double/hold/wake/power-confirm actions;
+- BLE pairing, sync, disconnect, and reconnect;
+- direct and channel messages in both directions;
+- independent reception of a flood-scoped Advert;
+- LoRa TX and RX receipts through the Pi COM11 observer;
+- battery ADC comparison against a multimeter; and
+- verified 60-second TFT power-off.
 
-The repeater and room server firmware can be set up via USB in the web config tool.
+After acceptance, the release will contain the exact `.uf2`, `.hex`, `SHA256SUMS`, source/license bundle, flashing instructions, and new straight-on photos of the running UI.
 
-- https://config.meshcore.io
+## License and upstream
 
-They can also be managed via LoRa in the mobile app by using the Remote Management feature.
-
-## 🛠 Hardware Compatibility
-
-MeshCore is designed for devices listed in the [MeshCore Flasher](https://meshcore.io/flasher)
-
-## 📜 License
-
-MeshCore is open-source software released under the MIT License. You are free to use, modify, and distribute it for personal and commercial projects.
-
-## Contributing
-
-Please submit PR's using 'dev' as the base branch!
-For minor changes just submit your PR and we'll try to review it, but for anything more 'impactful' please open an Issue first and start a discussion. It is better to sound out what it is you want to achieve first, and try to come to a consensus on what the best approach is, especially when it impacts the structure or architecture of this codebase.
-
-Here are some general principles you should try to adhere to:
-* Keep it simple. Please, don't think like a high-level lang programmer. Think embedded, and keep code concise, without any unnecessary layers.
-* No dynamic memory allocation, except during setup/begin functions.
-* Use the same brace and indenting style that's in the core source modules. (A .clang-format is probably going to be added soon, but please do NOT retroactively re-format existing code. This just creates unnecessary diffs that make finding problems harder)
-
-Help us prioritize! Please react with thumbs-up to issues/PRs you care about most. We look at reaction counts when planning work.
-
-### Running unit tests
-
-To run unit tests, run the following command:
-
-```bash
-pio test --environment native --verbose
-```
-
-## Road-Map / To-Do
-
-There are a number of fairly major features in the pipeline, with no particular time-frames attached yet. In very rough chronological order:
-- [X] Companion radio: UI redesign
-- [X] Repeater + Room Server: add ACL's (like Sensor Node has)
-- [X] Standardise Bridge mode for repeaters
-- [ ] Repeater/Bridge: Standardise the Transport Codes for zoning/filtering
-- [X] Core + Repeater: enhanced zero-hop neighbour discovery
-- [ ] Core: round-trip manual path support
-- [ ] Companion + Apps: support for multiple sub-meshes (and 'off-grid' client repeat mode)
-- [ ] Core + Apps: support for LZW message compression
-- [ ] Core: dynamic CR (Coding Rate) for weak vs strong hops
-- [ ] Core: new framework for hosting multiple virtual nodes on one physical device
-- [ ] V2 protocol spec: discussion and consensus around V2 packet protocol, including path hashes, new encryption specs, etc
-
-## 📞 Get Support
-
-- Report bugs and request features on the [GitHub Issues](https://github.com/ripplebiz/MeshCore/issues) page.
-- Find additional guides and components on [my site](https://buymeacoffee.com/ripplebiz).
-- Join [MeshCore Discord](https://meshcore.gg) to chat with the developers and get help from the community.
+This is a derivative of [MeshCore](https://github.com/meshcore-dev/MeshCore). Preserve the upstream license notices and third-party licenses when redistributing source or binaries. The repository’s top-level license is in [license.txt](license.txt).
