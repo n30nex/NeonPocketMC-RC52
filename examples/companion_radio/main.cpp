@@ -104,7 +104,9 @@ MyMesh the_mesh(radio_driver, fast_rng, rtc_clock, tables, store
 /* END GLOBAL OBJECTS */
 
 void halt() {
-  while (1) ;
+  while (1) {
+    delay(1000);
+  }
 }
 
 /* WIFI RECONNECT TRACKERS */
@@ -134,7 +136,21 @@ void setup() {
   }
 #endif
 
-  if (!radio_init()) { halt(); }
+  if (!radio_init()) {
+    Serial.println("ERROR: radio initialization failed");
+#ifdef DISPLAY_CLASS
+    if (disp != NULL) {
+      disp->startFrame();
+      disp->setTextSize(1);
+      disp->setColor(UIColor::warning_txt);
+      disp->drawTextCentered(disp->width() / 2, disp->height() / 2 - 10, "RADIO INIT FAILED");
+      disp->setColor(UIColor::primary_txt);
+      disp->drawTextCentered(disp->width() / 2, disp->height() / 2 + 8, "Reset device");
+      disp->endFrame();
+    }
+#endif
+    halt();
+  }
 
   fast_rng.begin(radio_driver.getRngSeed());
 
