@@ -91,6 +91,9 @@ MultiSerialInterface interface_manager;
 /* GLOBAL OBJECTS */
 #ifdef DISPLAY_CLASS
   #include "UITask.h"
+  #ifdef NEONPOCKET_UI
+    #include "NeonPocketSplash.h"
+  #endif
   UITask ui_task(&board, &interface_manager);
 #endif
 
@@ -169,11 +172,17 @@ void setup() {
 #ifdef RC52_STARTUP_DIAGNOSTICS
     Serial.println("RC52_DIAG stage=display-ready");
 #endif
+  #ifdef NEONPOCKET_UI
+    disp->startFrame(NeonPocketSplash::BLACK);
+    NeonPocketSplash::draw(*disp, 0, FIRMWARE_VERSION, FIRMWARE_BUILD_DATE,
+                           "RADIO CORE INIT");
+  #else
     disp->startFrame();
-  #ifdef ST7789
-    disp->setTextSize(2);
-  #endif
+    #ifdef ST7789
+      disp->setTextSize(2);
+    #endif
     disp->drawTextCentered(disp->width() / 2, 28, "Loading...");
+  #endif
     disp->endFrame();
   } else {
     Serial.println("ERROR: required display initialization failed");
