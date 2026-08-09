@@ -290,7 +290,7 @@ void MyMesh::logRxRaw(float snr, float rssi, const uint8_t raw[], int len) {
 
 void MyMesh::logTx(mesh::Packet* packet, int len) {
   (void) len;
-#ifdef HELTEC_RCC6_NEON_UI
+#ifdef NEONPOCKET_UI
   const bool report = packet->getPayloadType() != PAYLOAD_TYPE_ADVERT || packet == _ui_advert_packet;
   if (packet == _ui_advert_packet) _ui_advert_packet = nullptr;
 #else
@@ -303,7 +303,7 @@ void MyMesh::logTx(mesh::Packet* packet, int len) {
 
 void MyMesh::logTxFail(mesh::Packet* packet, int len) {
   (void) len;
-#ifdef HELTEC_RCC6_NEON_UI
+#ifdef NEONPOCKET_UI
   const bool report = packet->getPayloadType() != PAYLOAD_TYPE_ADVERT || packet == _ui_advert_packet;
   if (packet == _ui_advert_packet) _ui_advert_packet = nullptr;
 #else
@@ -2276,7 +2276,7 @@ void MyMesh::loop() {
 }
 
 bool MyMesh::advert(bool flood) {
-#ifdef HELTEC_RCC6_NEON_UI
+#ifdef NEONPOCKET_UI
   if (_ui_advert_packet != nullptr) return false;
 #endif
   mesh::Packet* pkt;
@@ -2293,7 +2293,7 @@ bool MyMesh::advert(bool flood) {
     } else {
       sendZeroHop(pkt);
     }
-#ifdef HELTEC_RCC6_NEON_UI
+#ifdef NEONPOCKET_UI
     bool queued = false;
     const int outbound_count = _mgr->getOutboundTotal();
     for (int i = 0; i < outbound_count; i++) {
