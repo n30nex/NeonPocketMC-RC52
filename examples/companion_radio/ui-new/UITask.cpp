@@ -2,6 +2,9 @@
 #include <helpers/TxtDataHelpers.h>
 #include "../MyMesh.h"
 #include "target.h"
+#ifdef NEONPOCKET_UI
+  #include "NeonPocketSplash.h"
+#endif
 #ifdef WIFI_SSID
   #include <WiFi.h>
 #endif
@@ -9,12 +12,13 @@
 #ifndef AUTO_OFF_MILLIS
   #define AUTO_OFF_MILLIS     15000   // 15 seconds
 #endif
-#define BOOT_SCREEN_MILLIS   3000   // 3 seconds
-
 #ifdef NEONPOCKET_UI
+  #define BOOT_SCREEN_MILLIS      NeonPocketSplash::DURATION_MILLIS
   #define NEON_FRAME_MILLIS       125
   #define NEON_TRANSITION_MILLIS  300
   #define NEON_POWER_CONFIRM_MILLIS 8000
+#else
+  #define BOOT_SCREEN_MILLIS      3000
 #endif
 
 #ifdef PIN_STATUS_LED
@@ -39,37 +43,6 @@ static constexpr int UI_MAX_UNREAD_MSGS = 32;
 
 #include "icons.h"
 
-#ifdef NEONPOCKET_UI
-static void drawNeonPocketMark(DisplayDriver& display, int x, int y, uint8_t phase) {
-  if (phase >= 1) {
-    display.setColor(0x07FF);  // cyan pocket
-    display.drawRect(x, y + 8, 40, 24);
-  }
-  if (phase >= 2) {
-    display.setColor(NEON_BLUE);  // cobalt mesh links
-    display.fillRect(x + 11, y + 26, 18, 2);
-    display.fillRect(x + 13, y + 23, 3, 2);
-    display.fillRect(x + 15, y + 20, 3, 2);
-    display.fillRect(x + 17, y + 17, 3, 2);
-    display.fillRect(x + 21, y + 17, 3, 2);
-    display.fillRect(x + 23, y + 20, 3, 2);
-    display.fillRect(x + 25, y + 23, 3, 2);
-  }
-  if (phase >= 3) {
-    display.setColor(NEON_GREEN);  // three mesh nodes
-    display.fillRect(x + 18, y + 13, 5, 5);
-    display.fillRect(x + 8, y + 24, 5, 5);
-    display.fillRect(x + 28, y + 24, 5, 5);
-  }
-  if (phase >= 4) {
-    display.setColor(0x07FF);  // packet sparks
-    display.fillRect(x + 7, y + 3, 4, 2);
-    display.fillRect(x + 19, y, 2, 5);
-    display.fillRect(x + 30, y + 2, 3, 3);
-  }
-}
-#endif
-
 class SplashScreen : public UIScreen {
   UITask* _task;
   unsigned long dismiss_after;
@@ -90,46 +63,21 @@ public:
     memcpy(_version_info, ver, len);
     _version_info[len] = 0;
 
-    dismiss_after = millis() + BOOT_SCREEN_MILLIS;
 #ifdef NEONPOCKET_UI
     started_at = millis();
+    dismiss_after = started_at + BOOT_SCREEN_MILLIS;
+#else
+    dismiss_after = millis() + BOOT_SCREEN_MILLIS;
 #endif
   }
 
   int render(DisplayDriver& display) override {
 #ifdef NEONPOCKET_UI
     const unsigned long elapsed = millis() - started_at;
-    uint8_t phase = 1 + elapsed / 180;
-    if (phase > 4) phase = 4;
-    const unsigned long progress_elapsed = elapsed < BOOT_SCREEN_MILLIS
-        ? elapsed : BOOT_SCREEN_MILLIS;
-    const int progress_width = 164 * progress_elapsed / BOOT_SCREEN_MILLIS;
+    NeonPocketSplash::draw(display, NeonPocketSplash::frameForElapsed(elapsed),
+                           _version_info, FIRMWARE_BUILD_DATE);
 
-    drawNeonPocketMark(display, (display.width() - 40) / 2, 6, phase);
-    if (elapsed >= 240) {
-      display.setTextSize(2);
-      display.setColor(NEON_GREEN);
-      display.drawTextCentered(display.width() / 2, 43, "NEONPOCKETMC");
-    }
-    if (elapsed >= 480) {
-      display.setTextSize(1);
-      display.setColor(NEON_LIGHT);
-      display.drawTextCentered(display.width() / 2, 65, "MESHCORE COMPANION");
-    }
-
-    display.setColor(NEON_BLUE);
-    display.drawRect(26, 82, 168, 8);
-    display.setColor(NEON_YELLOW);
-    display.fillRect(28, 84, progress_width, 4);
-    display.setTextSize(1);
-    display.setColor(NEON_LIGHT);
-    display.setCursor(26, 99);
-    display.print(_version_info);
-    display.drawTextRightAlign(display.width() - 26, 99, FIRMWARE_BUILD_DATE);
-    display.setColor(NEON_BLUE);
-    display.drawTextCentered(display.width() / 2, 114, "LOADING RADIO");
-
-    return elapsed < BOOT_SCREEN_MILLIS ? NEON_FRAME_MILLIS : 500;
+    return elapsed < BOOT_SCREEN_MILLIS ? NeonPocketSplash::FRAME_MILLIS : 500;
 #else
     // meshcore logo
     display.setColor(NEON_BLUE);
