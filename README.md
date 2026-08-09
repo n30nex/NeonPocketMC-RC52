@@ -10,9 +10,11 @@ Experimental MeshCore 1.17 BLE companion firmware for the Heltec RadioCore RC52-
 
 <p align="center"><em>NeonPocketMC Home dashboard on the RC52 qualification unit.</em></p>
 
-## Experimental status
+## Release status
 
-This repository is public for development and hardware qualification. There is **no endorsed binary release yet**. Do not distribute an Actions artifact as a release build. The first release candidate will be published only after the exact artifact passes the hardware checklist below.
+The first experimental release, [`v1.0.0-rc.1`](https://github.com/n30nex/NeonPocketMC-RC52/releases/tag/v1.0.0-rc.1), is available now. Use only the files attached to that GitHub Release; short-lived Actions artifacts are development builds.
+
+RC1 is the exact application-only firmware physically run on the RC52 qualification unit and accepted by its owner. It remains a release candidate, not a final stable release.
 
 The port is pinned to MeshCore 1.17.0 at upstream commit [`727fc0512ce08bfd7b499e46daa7fca6eeec730d`](https://github.com/meshcore-dev/MeshCore/commit/727fc0512ce08bfd7b499e46daa7fca6eeec730d). The RCC6 project supplied the visual reference only; its ESP32 hardware, Web/AP transport, and release history are not included.
 
@@ -65,22 +67,11 @@ GitHub Actions is the supported build path. The `RC52 Build` workflow:
 
 The artifact is application-only. It must be copied through the RC52 UF2 bootloader. **Never erase or replace the bootloader or SoftDevice.** See [docs/FLASHING.md](docs/FLASHING.md).
 
-## Release gate
+## RC1 qualification
 
-Before `v1.0.0-rc.1`, the exact Actions artifact must pass:
+RC1 is anchored to firmware source commit [`14b949436d3e9c6200c3384d1963ec39fe2c637d`](https://github.com/n30nex/NeonPocketMC-RC52/commit/14b949436d3e9c6200c3384d1963ec39fe2c637d) and its successful [GitHub Actions build](https://github.com/n30nex/NeonPocketMC-RC52/actions/runs/31321748756). The attached UF2 is byte-for-byte the firmware tested on the qualification unit.
 
-- three clean resets with stable USB and an upright, uncropped TFT;
-- framebuffer allocation plus a recurring 16 KB diagnostic allocation;
-- 30 minutes of BLE-authenticated sync and LoRa activity without reset or display corruption;
-- all single/double/hold/wake/power-confirm actions;
-- BLE pairing, sync, disconnect, and reconnect;
-- direct and channel messages in both directions;
-- independent reception of a flood-scoped Advert;
-- LoRa TX and RX receipts through the Pi COM11 observer;
-- battery ADC comparison against a multimeter; and
-- verified 60-second TFT power-off.
-
-After acceptance, the release will contain the exact `.uf2`, `.hex`, `SHA256SUMS`, source/license bundle, flashing instructions, and new straight-on photos of the running UI.
+The owner confirmed the readable TFT UI, button behavior, BLE companion operation, and LoRa operation and authorized RC1 publication. Longer endurance testing and physical battery-ADC calibration are deferred; the provisional voltage warning and lack of automatic low-voltage shutdown remain documented limitations.
 
 ## License and upstream
 
