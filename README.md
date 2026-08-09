@@ -16,9 +16,9 @@ Experimental MeshCore 1.17 BLE companion firmware for the Heltec RadioCore RC52-
 
 ## Release status
 
-The first experimental release, [`v1.0.0-rc.1`](https://github.com/n30nex/NeonPocketMC-RC52/releases/tag/v1.0.0-rc.1), is available now. Use only the files attached to that GitHub Release; short-lived Actions artifacts are development builds.
+The current experimental release is [`v1.1.0-rc.1`](https://github.com/n30nex/NeonPocketMC-RC52/releases/tag/v1.1.0-rc.1). Use only the files attached to that GitHub Release; short-lived Actions artifacts are development builds.
 
-RC1 is the exact application-only firmware physically run on the RC52 qualification unit and accepted by its owner. It remains a release candidate, not a final stable release.
+This release adds the animated NeonPocketMC startup while retaining the application-only RC52 port accepted on the qualification unit in 1.0 RC1. It is still a release candidate, not a final stable release.
 
 The port is pinned to MeshCore 1.17.0 at upstream commit [`727fc0512ce08bfd7b499e46daa7fca6eeec730d`](https://github.com/meshcore-dev/MeshCore/commit/727fc0512ce08bfd7b499e46daa7fca6eeec730d). The RCC6 project supplied the visual reference only; its ESP32 hardware, Web/AP transport, and release history are not included.
 
@@ -72,11 +72,11 @@ GitHub Actions is the supported build path. The `RC52 Build` workflow:
 
 The artifact is application-only. It must be copied through the RC52 UF2 bootloader. **Never erase or replace the bootloader or SoftDevice.** See [docs/FLASHING.md](docs/FLASHING.md).
 
-## RC1 qualification
+## 1.1 RC1 qualification
 
-RC1 is anchored to firmware source commit [`14b949436d3e9c6200c3384d1963ec39fe2c637d`](https://github.com/n30nex/NeonPocketMC-RC52/commit/14b949436d3e9c6200c3384d1963ec39fe2c637d) and its successful [GitHub Actions build](https://github.com/n30nex/NeonPocketMC-RC52/actions/runs/31321748756). The attached UF2 is byte-for-byte the firmware tested on the qualification unit.
+The exact release commit and build links are recorded on the 1.1 RC1 release page and in [`docs/releases/1.1-RC1.md`](docs/releases/1.1-RC1.md). GitHub Actions builds the RC52 image, validates its UF2 family and application address, runs upstream unit tests, and regression-builds an existing nRF52 companion target.
 
-The owner confirmed the readable TFT UI, button behavior, BLE companion operation, and LoRa operation and authorized RC1 publication. Longer endurance testing and physical battery-ADC calibration are deferred; the provisional voltage warning and lack of automatic low-voltage shutdown remain documented limitations.
+The underlying RC52 TFT, button, BLE, and LoRa port was physically accepted for 1.0 RC1. The 1.1 animated-startup change is CI-qualified but was not re-flashed to the RC52 qualification unit because that unit was not connected for this release. Longer endurance testing and physical battery-ADC calibration remain deferred.
 
 ## License and upstream
 
