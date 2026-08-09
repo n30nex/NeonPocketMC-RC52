@@ -27,7 +27,7 @@
     
     
       
-        <title>Experimental RC52 flashing - MeshCore Docs</title>
+        <title>RC52 release flashing - MeshCore Docs</title>
       
     
     
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#experimental-rc52-flashing" class="md-skip">
+        <a href="#rc52-release-flashing" class="md-skip">
           Skip to content
         </a>
       
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Experimental RC52 flashing
+              RC52 release flashing
             
           </span>
         </div>
@@ -269,7 +269,7 @@
   <span class="md-ellipsis">
     
   
-    Experimental RC52 flashing
+    RC52 release flashing
   
 
     
@@ -607,6 +607,88 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_15" id="__nav_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Releases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releases/1.0-RC1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NeonPocketMC-RC52 v1.0.0-rc.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -650,15 +732,15 @@
   
 
 
-<h1 id="experimental-rc52-flashing">Experimental RC52 flashing</h1>
+<h1 id="rc52-release-flashing">RC52 release flashing</h1>
 <blockquote>
 <p><strong>RC52 only—do not flash RCC6, RC32, or RC52 variants with different display/radio hardware.</strong></p>
 </blockquote>
-<p>There is no endorsed release binary yet. These instructions are for a specifically identified RC52-L62 qualification unit and an exact GitHub Actions artifact.</p>
+<p>These instructions are for the application-only UF2 attached to an official NeonPocketMC-RC52 GitHub Release.</p>
 <ol>
 <li>Confirm the connected device is the intended Heltec RC52 and record its stable USB identity.</li>
-<li>Download the artifact from the successful <code>RC52 Build</code> run for the exact source commit.</li>
-<li>Verify <code>firmware.uf2</code> against the artifact’s <code>SHA256SUMS</code>.</li>
+<li>Download the <code>.uf2</code> and <code>SHA256SUMS</code> files from the same GitHub Release.</li>
+<li>Verify the UF2 against <code>SHA256SUMS</code> before copying it to the device.</li>
 <li>Attach a suitable 868/915 MHz antenna before allowing LoRa transmission.</li>
 <li>Enter the UF2 bootloader with the board’s reset sequence or a 1200-baud touch.</li>
 <li>Confirm the mounted UF2 volume identifies an nRF52840 RC52 bootloader.</li>
