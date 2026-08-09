@@ -224,8 +224,18 @@ void NV3001BDisplay::writeBytes(const uint8_t* data, size_t len) {
 }
 
 void NV3001BDisplay::writeCommandData(uint8_t cmd, const uint8_t* data, size_t len) {
-  writeCommand(cmd);
-  writeBytes(data, len);
+  spi->beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));
+  digitalWrite(PIN_TFT_CS, LOW);
+  digitalWrite(PIN_TFT_DC, LOW);
+  spi->transfer(cmd);
+  if (data && len) {
+    digitalWrite(PIN_TFT_DC, HIGH);
+    for (size_t i = 0; i < len; i++) {
+      spi->transfer(data[i]);
+    }
+  }
+  digitalWrite(PIN_TFT_CS, HIGH);
+  spi->endTransaction();
 }
 
 void NV3001BDisplay::setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
@@ -510,9 +520,9 @@ bool NV3001BDisplay::begin() {
   if (PIN_TFT_RST >= 0) {
     pinMode(PIN_TFT_RST, OUTPUT);
     digitalWrite(PIN_TFT_RST, HIGH);
-    delay(10);
+    delay(100);
     digitalWrite(PIN_TFT_RST, LOW);
-    delay(20);
+    delay(120);
     digitalWrite(PIN_TFT_RST, HIGH);
     delay(120);
   }
