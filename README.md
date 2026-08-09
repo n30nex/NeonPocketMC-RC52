@@ -28,7 +28,7 @@ Web/AP, USB companion, headless, and alternate RC52 hardware variants are delibe
 
 | Function | Pins / behavior |
 | --- | --- |
-| TFT SPI1 | SCK 30, MOSI 34, CS 36, DC 28, reset 10 |
+| TFT SPI1 | SCK 30, MOSI 35, CS 37, DC 28, reset 10 |
 | TFT power | enable 45 active-low, backlight 9 active-high |
 | SX1262 SPI | SCK 25, MISO 14, MOSI 22, CS 13 |
 | SX1262 control | DIO1 11, BUSY 24, reset 32, RXEN 39 |

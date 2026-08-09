@@ -33,9 +33,9 @@
 #define SPI_INTERFACES_COUNT    (2)
 #define SPI_32MHZ_INTERFACE     (1)
 #define PIN_TFT_SCL             (30)
-#define PIN_TFT_SDA             (34)  // P1.02
+#define PIN_TFT_SDA             (35)  // P1.03
 #define PIN_TFT_MISO            (12)  // not connected; SPIClass requires a pin
-#define PIN_TFT_CS              (36)  // P1.04
+#define PIN_TFT_CS              (37)  // P1.05
 #define PIN_TFT_DC              (28)
 #define PIN_TFT_RST             (10)
 #define PIN_TFT_EN              (45)  // P1.13
