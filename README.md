@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/n30nex/NeonPocketMC/main/branding/neonpocketmc-mark.png" alt="NeonPocketMC pocket mesh logo" width="140">
+</p>
+
 # NeonPocketMC-RC52
 
 Experimental MeshCore 1.17 BLE companion firmware for the Heltec RadioCore RC52-L62 with its vendor 220 x 128 NV3001B TFT.
@@ -23,6 +27,7 @@ The port is pinned to MeshCore 1.17.0 at upstream commit [`727fc0512ce08bfd7b499
 - One target: `heltec_rc52_companion_radio_ble`
 - BLE companion transport only
 - Native 220 x 128 RGB565 NeonPocket dashboard and inbox
+- Animated NeonPocketMC startup mark and progress sequence
 - One hardware-SPI framebuffer with 8-row delta flushing
 - Home, Inbox, Nearby, Radio, Bluetooth, Advert, and Power pages
 - Local direct and `#channel` unread tracking with a bounded `32+` cache
