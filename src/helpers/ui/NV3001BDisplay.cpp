@@ -493,6 +493,9 @@ bool NV3001BDisplay::begin() {
   delay(20);
 
   if (external_spi) {
+#if defined(NRF52_PLATFORM)
+    spi->setPins(PIN_TFT_MISO, PIN_TFT_SCL, PIN_TFT_SDA);
+#endif
     spi->begin();
   } else {
 #if defined(ESP32)
