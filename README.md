@@ -4,6 +4,12 @@ Experimental MeshCore 1.17 BLE companion firmware for the Heltec RadioCore RC52-
 
 > **RC52 only—do not flash RCC6, RC32, or RC52 variants with different display/radio hardware.**
 
+<p align="center">
+  <img src="docs/images/neonpocket-rc52-home.jpg" alt="NeonPocketMC Home dashboard running on a Heltec RadioCore RC52" width="720">
+</p>
+
+<p align="center"><em>NeonPocketMC Home dashboard on the RC52 qualification unit.</em></p>
+
 ## Experimental status
 
 This repository is public for development and hardware qualification. There is **no endorsed binary release yet**. Do not distribute an Actions artifact as a release build. The first release candidate will be published only after the exact artifact passes the hardware checklist below.
