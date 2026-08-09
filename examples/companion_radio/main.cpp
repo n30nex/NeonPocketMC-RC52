@@ -146,7 +146,14 @@ static bool probeNeonMemory() {
 
 void setup() {
   Serial.begin(115200);
+#ifdef RC52_STARTUP_DIAGNOSTICS
+  delay(2500);
+  Serial.println("RC52_DIAG stage=serial-ready");
+#endif
   board.begin();
+#ifdef RC52_STARTUP_DIAGNOSTICS
+  Serial.println("RC52_DIAG stage=board-ready");
+#endif
 
 #ifdef HAS_EXTERNAL_WATCHDOG
   external_watchdog.begin();
@@ -154,8 +161,14 @@ void setup() {
 
 #ifdef DISPLAY_CLASS
   DisplayDriver* disp = NULL;
+#ifdef RC52_STARTUP_DIAGNOSTICS
+  Serial.println("RC52_DIAG stage=display-begin");
+#endif
   if (display.begin()) {
     disp = &display;
+#ifdef RC52_STARTUP_DIAGNOSTICS
+    Serial.println("RC52_DIAG stage=display-ready");
+#endif
     disp->startFrame();
   #ifdef ST7789
     disp->setTextSize(2);
@@ -170,6 +183,9 @@ void setup() {
   }
 #endif
 
+#ifdef RC52_STARTUP_DIAGNOSTICS
+  Serial.println("RC52_DIAG stage=radio-begin");
+#endif
   if (!radio_init()) {
     Serial.println("ERROR: radio initialization failed");
 #ifdef DISPLAY_CLASS
@@ -185,10 +201,16 @@ void setup() {
 #endif
     halt();
   }
+#ifdef RC52_STARTUP_DIAGNOSTICS
+  Serial.println("RC52_DIAG stage=radio-ready");
+#endif
 
   fast_rng.begin(radio_driver.getRngSeed());
 
 #if defined(NRF52_PLATFORM) || defined(STM32_PLATFORM)
+#ifdef RC52_STARTUP_DIAGNOSTICS
+  Serial.println("RC52_DIAG stage=storage-begin");
+#endif
   const bool internal_fs_ready = InternalFS.begin();
 #ifdef NEONPOCKET_UI
   if (!internal_fs_ready) {
@@ -198,6 +220,9 @@ void setup() {
   #endif
     halt();
   }
+#endif
+#ifdef RC52_STARTUP_DIAGNOSTICS
+  Serial.println("RC52_DIAG stage=storage-ready");
 #endif
   #if defined(QSPIFLASH)
     if (!QSPIFlash.begin()) {
@@ -313,6 +338,9 @@ void setup() {
 #endif
 
   board.onBootComplete();
+#ifdef RC52_STARTUP_DIAGNOSTICS
+  Serial.println("RC52_DIAG stage=boot-complete");
+#endif
 }
 
 void loop() {

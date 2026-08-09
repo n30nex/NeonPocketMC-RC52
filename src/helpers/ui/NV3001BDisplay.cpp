@@ -480,6 +480,12 @@ bool NV3001BDisplay::begin() {
 
   setupOptionalOutput(PIN_TFT_EN, PIN_TFT_EN_ACTIVE);
   setupOptionalOutput(PIN_TFT_BL, !PIN_TFT_BL_ACTIVE);
+#ifdef RC52_STARTUP_DIAGNOSTICS
+  Serial.print("RC52_DIAG tft-power en=");
+  Serial.print(digitalRead(PIN_TFT_EN));
+  Serial.print(" bl=");
+  Serial.println(digitalRead(PIN_TFT_BL));
+#endif
   pinMode(PIN_TFT_CS, OUTPUT);
   pinMode(PIN_TFT_DC, OUTPUT);
   digitalWrite(PIN_TFT_CS, HIGH);
@@ -495,6 +501,9 @@ bool NV3001BDisplay::begin() {
     spi->begin();
 #endif
   }
+#ifdef RC52_STARTUP_DIAGNOSTICS
+  Serial.println("RC52_DIAG tft-spi=ready");
+#endif
   if (PIN_TFT_RST >= 0) {
     pinMode(PIN_TFT_RST, OUTPUT);
     digitalWrite(PIN_TFT_RST, HIGH);
@@ -506,6 +515,9 @@ bool NV3001BDisplay::begin() {
   }
 
   initPanel();
+#ifdef RC52_STARTUP_DIAGNOSTICS
+  Serial.println("RC52_DIAG tft-panel-init=sent");
+#endif
   is_on = true;
   color = 0x0000;
 #if NV3001B_USE_FRAMEBUFFER
