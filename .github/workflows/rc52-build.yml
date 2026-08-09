@@ -38,7 +38,8 @@ jobs:
       fail-fast: false
       matrix:
         environment:
-          - heltec_rc52_display_diagnostic
+          - heltec_rc52_companion_radio_ble
+          - Heltec_t114_companion_radio_ble
 
     steps:
       - name: Check out exact source
@@ -56,31 +57,34 @@ jobs:
       - name: Build ${{ matrix.environment }}
         run: pio run -e ${{ matrix.environment }}
 
-      - name: Create RC52 diagnostic UF2
-        run: pio run -e heltec_rc52_display_diagnostic -t create_uf2
+      - name: Create RC52 application UF2
+        if: matrix.environment == 'heltec_rc52_companion_radio_ble'
+        run: pio run -e heltec_rc52_companion_radio_ble -t create_uf2
 
-      - name: Verify RC52 diagnostic UF2
+      - name: Verify RC52 UF2
+        if: matrix.environment == 'heltec_rc52_companion_radio_ble'
         shell: bash
         run: |
-          test -s .pio/build/heltec_rc52_display_diagnostic/firmware.hex
-          test -s .pio/build/heltec_rc52_display_diagnostic/firmware.uf2
-          test "$(($(stat -c%s .pio/build/heltec_rc52_display_diagnostic/firmware.uf2) % 512))" -eq 0
-          python bin/uf2conv/uf2conv.py -i .pio/build/heltec_rc52_display_diagnostic/firmware.uf2 | tee .pio/build/heltec_rc52_display_diagnostic/uf2-info.txt
-          grep -qi '0xada52840' .pio/build/heltec_rc52_display_diagnostic/uf2-info.txt
-          grep -qi 'Target Address is 0x00026000' .pio/build/heltec_rc52_display_diagnostic/uf2-info.txt
+          test -s .pio/build/heltec_rc52_companion_radio_ble/firmware.hex
+          test -s .pio/build/heltec_rc52_companion_radio_ble/firmware.uf2
+          test "$(($(stat -c%s .pio/build/heltec_rc52_companion_radio_ble/firmware.uf2) % 512))" -eq 0
+          python bin/uf2conv/uf2conv.py -i .pio/build/heltec_rc52_companion_radio_ble/firmware.uf2 | tee .pio/build/heltec_rc52_companion_radio_ble/uf2-info.txt
+          grep -qi '0xada52840' .pio/build/heltec_rc52_companion_radio_ble/uf2-info.txt
+          grep -qi 'Target Address is 0x00026000' .pio/build/heltec_rc52_companion_radio_ble/uf2-info.txt
           sha256sum \
-            .pio/build/heltec_rc52_display_diagnostic/firmware.uf2 \
-            .pio/build/heltec_rc52_display_diagnostic/firmware.hex \
-            > .pio/build/heltec_rc52_display_diagnostic/SHA256SUMS
+            .pio/build/heltec_rc52_companion_radio_ble/firmware.uf2 \
+            .pio/build/heltec_rc52_companion_radio_ble/firmware.hex \
+            > .pio/build/heltec_rc52_companion_radio_ble/SHA256SUMS
 
-      - name: Upload exact RC52 diagnostic artifacts
+      - name: Upload exact RC52 application artifacts
+        if: matrix.environment == 'heltec_rc52_companion_radio_ble'
         uses: actions/upload-artifact@v4
         with:
-          name: RC52-Display-Diagnostic-${{ github.event.pull_request.head.sha || github.sha }}
+          name: NeonPocketMC-RC52-${{ github.event.pull_request.head.sha || github.sha }}
           if-no-files-found: error
           path: |
-            .pio/build/heltec_rc52_display_diagnostic/firmware.uf2
-            .pio/build/heltec_rc52_display_diagnostic/firmware.hex
-            .pio/build/heltec_rc52_display_diagnostic/SHA256SUMS
-            .pio/build/heltec_rc52_display_diagnostic/uf2-info.txt
+            .pio/build/heltec_rc52_companion_radio_ble/firmware.uf2
+            .pio/build/heltec_rc52_companion_radio_ble/firmware.hex
+            .pio/build/heltec_rc52_companion_radio_ble/SHA256SUMS
+            .pio/build/heltec_rc52_companion_radio_ble/uf2-info.txt
           retention-days: 14

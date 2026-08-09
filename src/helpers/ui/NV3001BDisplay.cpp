@@ -254,8 +254,6 @@ void NV3001BDisplay::setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t 
   data[2] = y2 >> 8;
   data[3] = y2 & 0xff;
   writeCommandData(NV3001B_RASET, data, sizeof(data));
-
-  writeCommand(NV3001B_RAMWR);
 }
 
 void NV3001BDisplay::writeColor(uint16_t rgb, uint32_t count) {
@@ -263,8 +261,10 @@ void NV3001BDisplay::writeColor(uint16_t rgb, uint32_t count) {
   uint8_t lo = rgb & 0xff;
 
   spi->beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));
-  digitalWrite(PIN_TFT_DC, HIGH);
   digitalWrite(PIN_TFT_CS, LOW);
+  digitalWrite(PIN_TFT_DC, LOW);
+  spi->transfer(NV3001B_RAMWR);
+  digitalWrite(PIN_TFT_DC, HIGH);
   while (count--) {
     spi->transfer(hi);
     spi->transfer(lo);
@@ -301,8 +301,10 @@ void NV3001BDisplay::flushFramebuffer() {
 
     setAddrWindow(0, y, NV3001B_SCREEN_WIDTH, rows);
     spi->beginTransaction(SPISettings(SPI_FREQUENCY, MSBFIRST, SPI_MODE0));
-    digitalWrite(PIN_TFT_DC, HIGH);
     digitalWrite(PIN_TFT_CS, LOW);
+    digitalWrite(PIN_TFT_DC, LOW);
+    spi->transfer(NV3001B_RAMWR);
+    digitalWrite(PIN_TFT_DC, HIGH);
     const size_t end = first + count;
     for (size_t i = first; i < end; i++) {
       spi->transfer(framebuffer[i] >> 8);
