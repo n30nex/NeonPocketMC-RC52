@@ -99,15 +99,24 @@
 #endif
 
 // Color scheme
+#ifdef NEONPOCKET_UI
+ColorVal UIColor::window_bkg = 0x0000;
+ColorVal UIColor::title_bkg = 0x0000;
+ColorVal UIColor::primary_txt = 0xFFFF;
+ColorVal UIColor::popup_bkg = 0x0000;
+ColorVal UIColor::popup_txt = 0xFFFF;
+ColorVal UIColor::corp_blue = 0x001F;
+#else
 ColorVal UIColor::window_bkg = 0xFFFF;
 ColorVal UIColor::title_bkg = 0x001F;
-ColorVal UIColor::title_txt = 0xFFFF;
 ColorVal UIColor::primary_txt = 0x0000;
-ColorVal UIColor::secondary_txt = (18 << 11) | (36 << 5) | 18;  // mid-gray
-ColorVal UIColor::warning_txt = 0xFD20;
-ColorVal UIColor::popup_bkg =  0x07FF;  // CYAN
+ColorVal UIColor::popup_bkg = 0x07FF;  // CYAN
 ColorVal UIColor::popup_txt = 0x0000;
 ColorVal UIColor::corp_blue = 0x001A;
+#endif
+ColorVal UIColor::title_txt = 0xFFFF;
+ColorVal UIColor::secondary_txt = (18 << 11) | (36 << 5) | 18;  // mid-gray
+ColorVal UIColor::warning_txt = 0xFD20;
 
 static int scaleX(int x) {
   return (int)(x * DISPLAY_SCALE_X);
