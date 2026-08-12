@@ -973,6 +973,21 @@ void MyMesh::begin(bool has_display) {
   _prefs.tx_power_dbm = constrain(_prefs.tx_power_dbm, -9, MAX_LORA_TX_POWER);
   _prefs.gps_enabled = constrain(_prefs.gps_enabled, 0, 1);  // Ensure boolean 0 or 1
   _prefs.gps_interval = constrain(_prefs.gps_interval, 0, 86400);  // Max 24 hours
+#ifdef HELTEC_RC52
+  if (_prefs.battery_capacity_mah != 0 &&
+      (_prefs.battery_capacity_mah < 50 || _prefs.battery_capacity_mah > 20000)) {
+    _prefs.battery_capacity_mah = 0;
+  }
+  if (_prefs.battery_adc_multiplier >= 1.0f && _prefs.battery_adc_multiplier <= 10.0f) {
+    board.setAdcMultiplier(_prefs.battery_adc_multiplier);
+  } else {
+    _prefs.battery_adc_multiplier = 0;
+  }
+  if (_prefs.battery_calibration_sample_mv < 2500 ||
+      _prefs.battery_calibration_sample_mv > 4500) {
+    _prefs.battery_calibration_sample_mv = 0;
+  }
+#endif
 
 #ifdef BLE_PIN_CODE // 123456 by default
   if (_prefs.ble_pin == 0) {
@@ -2056,6 +2071,49 @@ void MyMesh::enterCLIRescue() {
   Serial.println("========= CLI Rescue =========");
 }
 
+#ifdef HELTEC_RC52
+void MyMesh::checkBatteryCalibration() {
+  const uint32_t now = millis();
+  if ((int32_t)(now - next_battery_source_check) < 0) return;
+  next_battery_source_check = now + 500;
+
+  const bool external = board.isExternalPowered();
+  if (!battery_source_known) {
+    battery_source_known = true;
+    battery_external_power = external;
+    return;
+  }
+
+  if (external != battery_external_power) {
+    battery_external_power = external;
+    battery_sample_at = external ? 0 : now + 3000;
+  }
+
+  if (!external && battery_sample_at && (int32_t)(now - battery_sample_at) >= 0) {
+    battery_sample_at = 0;
+    const uint16_t sample = board.getBattMilliVolts();
+    if (sample >= 2500 && sample <= 4500) {
+      _prefs.battery_calibration_sample_mv = sample;
+      savePrefs();
+      Serial.printf("Battery learning started: %u mV, %u mAh pack\n",
+                    sample, _prefs.battery_capacity_mah);
+    }
+  }
+}
+
+void MyMesh::setBatteryCapacity(const char* value) {
+  char* end = nullptr;
+  const unsigned long capacity = strtoul(value, &end, 10);
+  if (!value[0] || *end || (capacity != 0 && (capacity < 50 || capacity > 20000))) {
+    Serial.println("  Error: battery size must be 50..20000 mAh, or 0 for unknown");
+    return;
+  }
+  _prefs.battery_capacity_mah = (uint16_t)capacity;
+  savePrefs();
+  Serial.printf("  > battery size is now %u mAh\n", _prefs.battery_capacity_mah);
+}
+#endif
+
 void MyMesh::checkCLIRescueCmd() {
   int len = strlen(cli_command);
   while (Serial.available() && len < sizeof(cli_command)-1) {
@@ -2073,15 +2131,55 @@ void MyMesh::checkCLIRescueCmd() {
   if (len > 0 && cli_command[len - 1] == '\r') {  // received complete line
     cli_command[len - 1] = 0;  // replace newline with C string null terminator
 
-    if (memcmp(cli_command, "set ", 4) == 0) {
+    if (memcmp(cli_command, "set.batterysize ", 16) == 0) {
+#ifdef HELTEC_RC52
+      setBatteryCapacity(&cli_command[16]);
+#else
+      Serial.println("  Error: unsupported by this board");
+#endif
+    } else if (memcmp(cli_command, "set ", 4) == 0) {
       const char* config = &cli_command[4];
       if (memcmp(config, "pin ", 4) == 0) {
         _prefs.ble_pin = atoi(&config[4]);
         savePrefs();
         Serial.printf("  > pin is now %06d\n", _prefs.ble_pin);
+#ifdef HELTEC_RC52
+      } else if (memcmp(config, "battery.size ", 13) == 0) {
+        setBatteryCapacity(&config[13]);
+      } else if (memcmp(config, "battery.calibrate ", 18) == 0) {
+        char* end = nullptr;
+        const long actual_mv = strtol(&config[18], &end, 10);
+        if (!config[18] || *end || actual_mv < 2500 || actual_mv > 4500) {
+          Serial.println("  Error: measured voltage must be 2500..4500 mV");
+        } else if (_prefs.battery_calibration_sample_mv == 0) {
+          Serial.println("  Error: unplug USB first and wait 3 seconds for a battery sample");
+        } else {
+          const float current = board.getAdcMultiplier();
+          const float calibrated = current * (float)actual_mv /
+                                   (float)_prefs.battery_calibration_sample_mv;
+          if (!board.setAdcMultiplier(calibrated)) {
+            Serial.println("  Error: calculated multiplier is outside 1.0..10.0");
+          } else {
+            _prefs.battery_adc_multiplier = calibrated;
+            _prefs.battery_calibration_sample_mv = 0;
+            savePrefs();
+            Serial.printf("  > ADC multiplier calibrated to %.3f\n", calibrated);
+          }
+        }
+#endif
       } else {
         Serial.printf("  Error: unknown config: %s\n", config);
       }
+#ifdef HELTEC_RC52
+    } else if (strcmp(cli_command, "battery") == 0) {
+      Serial.printf("  > source=%s voltage=%umV size=%umAh multiplier=%.3f sample=%umV\n",
+                    board.isExternalPowered() ? "USB" : "battery",
+                    board.getBattMilliVolts(), _prefs.battery_capacity_mah,
+                    board.getAdcMultiplier(), _prefs.battery_calibration_sample_mv);
+    } else if (strcmp(cli_command, "help") == 0) {
+      Serial.println("  set.batterysize <mAh> | set battery.size <mAh>");
+      Serial.println("  battery | set battery.calibrate <multimeter-mV>");
+#endif
     } else if (strcmp(cli_command, "rebuild") == 0) {
       bool success = _store->formatFileSystem();
       if (success) {
@@ -2257,6 +2355,10 @@ void MyMesh::checkSerialInterface() {
 
 void MyMesh::loop() {
   BaseChatMesh::loop();
+
+#ifdef HELTEC_RC52
+  checkBatteryCalibration();
+#endif
 
   if (_cli_rescue) {
     checkCLIRescueCmd();

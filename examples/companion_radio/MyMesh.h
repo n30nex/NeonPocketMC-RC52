@@ -207,6 +207,10 @@ private:
   void checkCLIRescueCmd();
   void checkSerialInterface();
   bool isValidClientRepeatFreq(uint32_t f) const;
+#ifdef HELTEC_RC52
+  void checkBatteryCalibration();
+  void setBatteryCapacity(const char* value);
+#endif
 
   // helpers, short-cuts
   void saveChannels() { _store->saveChannels(this); }
@@ -236,6 +240,13 @@ private:
   uint8_t *sign_data;
   uint32_t sign_data_len;
   unsigned long dirty_contacts_expiry;
+
+#ifdef HELTEC_RC52
+  uint32_t next_battery_source_check = 0;
+  uint32_t battery_sample_at = 0;
+  bool battery_source_known = false;
+  bool battery_external_power = false;
+#endif
 
   TransportKey send_scope;
 

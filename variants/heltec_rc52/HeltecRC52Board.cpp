@@ -5,6 +5,7 @@
 #include "variant.h"
 
 static constexpr float RC52_ADC_MV_LSB = 3000.0f / 4096.0f;
+static float rc52_adc_multiplier = ADC_MULTIPLIER;
 
 #ifdef NRF52_POWER_MANAGEMENT
 static const PowerMgtConfig rc52_power_config = {
@@ -49,7 +50,17 @@ uint16_t HeltecRC52Board::getBattMilliVolts() {
   delay(10);
   const int adc = analogRead(PIN_VBAT_READ);
   digitalWrite(PIN_BAT_CTL, LOW);
-  return (uint16_t)(adc * RC52_ADC_MV_LSB * ADC_MULTIPLIER);
+  return (uint16_t)(adc * RC52_ADC_MV_LSB * rc52_adc_multiplier);
+}
+
+bool HeltecRC52Board::setAdcMultiplier(float multiplier) {
+  if (multiplier < 1.0f || multiplier > 10.0f) return false;
+  rc52_adc_multiplier = multiplier;
+  return true;
+}
+
+float HeltecRC52Board::getAdcMultiplier() const {
+  return rc52_adc_multiplier;
 }
 
 void HeltecRC52Board::powerOff() {
