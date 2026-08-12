@@ -64,6 +64,7 @@ The radio uses DIO2 RF switching, DIO3 at 1.8 V for the TCXO, DC-DC mode, and th
 - Screen off: the first gesture wakes the TFT and is consumed.
 - Single press: next tab, inbox item, or message page.
 - Double press: the current page action, including opening Inbox, toggling BLE, or sending a flood-scoped Advert.
+- Triple press: return to Home; from Inbox it also clears every local unread message.
 - Long hold: show Power confirmation.
 - Second long hold within eight seconds while confirmation is visible: enter nRF52 system-off after button release.
 
