@@ -24,9 +24,9 @@ The RC52 renders this 3.2-second sequence natively before the companion dashboar
 
 ## Release status
 
-The current experimental release is [`v1.1.0-rc.1`](https://github.com/n30nex/NeonPocketMC-RC52/releases/tag/v1.1.0-rc.1). Use only the files attached to that GitHub Release; short-lived Actions artifacts are development builds.
+The current experimental release is [`v1.1.0-rc.3`](https://github.com/n30nex/NeonPocketMC-RC52/releases/tag/v1.1.0-rc.3). Use only the files attached to that GitHub Release; short-lived Actions artifacts are development builds.
 
-This release adds the animated NeonPocketMC startup while retaining the application-only RC52 port accepted on the qualification unit in 1.0 RC1. It is still a release candidate, not a final stable release.
+This release retains the animated NeonPocketMC startup and adds a universal triple-press shortcut: return Home from any page, or clear the local unread Inbox and return Home when invoked there. It is still a release candidate, not a final stable release.
 
 The port is pinned to MeshCore 1.17.0 at upstream commit [`727fc0512ce08bfd7b499e46daa7fca6eeec730d`](https://github.com/meshcore-dev/MeshCore/commit/727fc0512ce08bfd7b499e46daa7fca6eeec730d). The RCC6 project supplied the visual reference only; its ESP32 hardware, Web/AP transport, and release history are not included.
 
@@ -81,11 +81,11 @@ GitHub Actions is the supported build path. The `RC52 Build` workflow:
 
 The artifact is application-only. It must be copied through the RC52 UF2 bootloader. **Never erase or replace the bootloader or SoftDevice.** See [docs/FLASHING.md](docs/FLASHING.md).
 
-## 1.1 RC1 qualification
+## 1.1 RC3 qualification
 
-The exact release commit and build links are recorded on the 1.1 RC1 release page and in [`docs/releases/1.1-RC1.md`](docs/releases/1.1-RC1.md). GitHub Actions builds the RC52 image, validates its UF2 family and application address, runs upstream unit tests, and regression-builds an existing nRF52 companion target.
+The exact release commit and build links are recorded on the 1.1 RC3 release page and in [`docs/releases/1.1-RC3.md`](docs/releases/1.1-RC3.md). GitHub Actions builds the RC52 image, validates its UF2 family and application address, runs upstream unit tests, and regression-builds an existing nRF52 companion target.
 
-The underlying RC52 TFT, button, BLE, and LoRa port was physically accepted for 1.0 RC1. The 1.1 animated-startup change is CI-qualified but was not re-flashed to the RC52 qualification unit because that unit was not connected for this release. Longer endurance testing and physical battery-ADC calibration remain deferred.
+The underlying RC52 TFT, button, BLE, and LoRa port was physically accepted on the qualification unit. The RC3 candidate was application-only flashed and booted on that same RC52; the triple-press change is additionally covered by the exact-target build contract. Longer endurance testing and physical battery-ADC calibration remain deferred.
 
 ## License and upstream
 
