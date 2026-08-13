@@ -8,6 +8,8 @@ Experimental MeshCore 1.17 BLE or native-USB companion firmware for the Heltec R
 
 > **RC52 only—do not flash RCC6, RC32, or RC52 variants with different display/radio hardware.**
 
+**Guided install:** [flasher.canadaverse.org](https://flasher.canadaverse.org/)
+
 <p align="center">
   <img src="docs/images/neonpocket-rc52-home.jpg" alt="NeonPocketMC Home dashboard running on a Heltec RadioCore RC52" width="720">
 </p>
