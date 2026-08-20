@@ -45,7 +45,7 @@ The port is pinned to MeshCore 1.17.0 at upstream commit [`727fc0512ce08bfd7b499
 - Warning below 3.45 V, cleared above 3.60 V; no automatic low-voltage shutdown
 - Fail-closed display, memory, radio, and filesystem startup checks
 
-Web/AP, headless, and alternate RC52 hardware variants are deliberately out of scope. The USB build exposes the standard binary MeshCore companion protocol; it is not the text CLI.
+Web/AP and alternate RC52 hardware variants are deliberately out of scope. For an RC52-L62 without the TFT, use the separate [NeonPocketMC-RC52-Headless](https://github.com/n30nex/NeonPocketMC-RC52-Headless) BLE image with default pairing PIN `123456`. The USB build exposes the standard binary MeshCore companion protocol; it is not the text CLI.
 
 ## Hardware contract
 
