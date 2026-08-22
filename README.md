@@ -83,6 +83,18 @@ GitHub Actions is the supported build path. The `RC52 Build` workflow:
 
 The artifact is application-only. It must be copied through the RC52 UF2 bootloader. **Never erase or replace the bootloader or SoftDevice.** See [docs/FLASHING.md](docs/FLASHING.md).
 
+## Battery setup and calibration
+
+The RC52 can distinguish USB VBUS from battery power. After USB is removed it waits three seconds, records a battery-only ADC sample, and preserves that sample across a reset. In early-boot CLI Rescue at 115200 baud:
+
+```text
+set.batterysize 420
+battery
+set battery.calibrate 3980
+```
+
+`set.batterysize` stores pack capacity metadata (50–20000 mAh, or `0` for unknown). It does **not** calibrate voltage. For voltage calibration, unplug USB, wait at least three seconds, measure the cell with a multimeter, reconnect/reset into CLI Rescue, check `battery`, then pass the measured millivolts to `set battery.calibrate`. The saved multiplier is applied on later boots. Automatic low-voltage shutdown remains disabled until this physical calibration is qualified.
+
 ## 1.1 RC4 qualification
 
 The exact release commit and build links are recorded on the [1.1 RC4 release page](https://github.com/n30nex/NeonPocketMC-RC52/releases/tag/v1.1.0-rc.4). GitHub Actions builds both RC52 images, validates their UF2 family and application address, runs upstream unit tests, and regression-builds an existing nRF52 companion target.

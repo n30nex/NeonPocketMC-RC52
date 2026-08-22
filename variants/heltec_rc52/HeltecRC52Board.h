@@ -14,5 +14,7 @@ public:
   void begin() override;
   void powerOff() override;
   uint16_t getBattMilliVolts() override;
+  bool setAdcMultiplier(float multiplier) override;
+  float getAdcMultiplier() const override;
   const char* getManufacturerName() const override { return "Heltec RC52"; }
 };
