@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-      - codex/**
   pull_request:
     branches:
       - main
@@ -39,6 +38,7 @@ jobs:
       matrix:
         environment:
           - heltec_rc52_companion_radio_ble
+          - heltec_rc52_companion_radio_usb
           - Heltec_t114_companion_radio_ble
 
     steps:
@@ -58,33 +58,45 @@ jobs:
         run: pio run -e ${{ matrix.environment }}
 
       - name: Create RC52 application UF2
-        if: matrix.environment == 'heltec_rc52_companion_radio_ble'
-        run: pio run -e heltec_rc52_companion_radio_ble -t create_uf2
+        if: startsWith(matrix.environment, 'heltec_rc52_companion_radio_')
+        run: pio run -e ${{ matrix.environment }} -t create_uf2
 
       - name: Verify RC52 UF2
-        if: matrix.environment == 'heltec_rc52_companion_radio_ble'
+        if: startsWith(matrix.environment, 'heltec_rc52_companion_radio_')
         shell: bash
         run: |
-          test -s .pio/build/heltec_rc52_companion_radio_ble/firmware.hex
-          test -s .pio/build/heltec_rc52_companion_radio_ble/firmware.uf2
-          test "$(($(stat -c%s .pio/build/heltec_rc52_companion_radio_ble/firmware.uf2) % 512))" -eq 0
-          python bin/uf2conv/uf2conv.py -i .pio/build/heltec_rc52_companion_radio_ble/firmware.uf2 | tee .pio/build/heltec_rc52_companion_radio_ble/uf2-info.txt
-          grep -qi '0xada52840' .pio/build/heltec_rc52_companion_radio_ble/uf2-info.txt
-          grep -qi 'Target Address is 0x00026000' .pio/build/heltec_rc52_companion_radio_ble/uf2-info.txt
+          out=.pio/build/${{ matrix.environment }}
+          test -s "$out/firmware.hex"
+          test -s "$out/firmware.uf2"
+          test "$(($(stat -c%s "$out/firmware.uf2") % 512))" -eq 0
+          python bin/uf2conv/uf2conv.py -i "$out/firmware.uf2" | tee "$out/uf2-info.txt"
+          grep -qi '0xada52840' "$out/uf2-info.txt"
+          grep -qi 'Target Address is 0x00026000' "$out/uf2-info.txt"
           sha256sum \
-            .pio/build/heltec_rc52_companion_radio_ble/firmware.uf2 \
-            .pio/build/heltec_rc52_companion_radio_ble/firmware.hex \
-            > .pio/build/heltec_rc52_companion_radio_ble/SHA256SUMS
+            "$out/firmware.uf2" \
+            "$out/firmware.hex" \
+            > "$out/SHA256SUMS"
 
       - name: Upload exact RC52 application artifacts
-        if: matrix.environment == 'heltec_rc52_companion_radio_ble'
+        if: startsWith(matrix.environment, 'heltec_rc52_companion_radio_')
         uses: actions/upload-artifact@v4
         with:
-          name: NeonPocketMC-RC52-${{ github.event.pull_request.head.sha || github.sha }}
+          name: NeonPocketMC-RC52-${{ matrix.environment }}-${{ github.event.pull_request.head.sha || github.sha }}
           if-no-files-found: error
           path: |
-            .pio/build/heltec_rc52_companion_radio_ble/firmware.uf2
-            .pio/build/heltec_rc52_companion_radio_ble/firmware.hex
-            .pio/build/heltec_rc52_companion_radio_ble/SHA256SUMS
-            .pio/build/heltec_rc52_companion_radio_ble/uf2-info.txt
+            .pio/build/${{ matrix.environment }}/firmware.uf2
+            .pio/build/${{ matrix.environment }}/firmware.hex
+            .pio/build/${{ matrix.environment }}/SHA256SUMS
+            .pio/build/${{ matrix.environment }}/uf2-info.txt
           retention-days: 14
+
+  required-firmware:
+    name: required-firmware
+    if: ${{ always() }}
+    needs: firmware
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every firmware image
+        env:
+          FIRMWARE_RESULT: ${{ needs.firmware.result }}
+        run: test "$FIRMWARE_RESULT" = success
